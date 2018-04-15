@@ -1,14 +1,12 @@
 <template>
-    <div>
+    <div class="fillPage">
         <router-view></router-view>
     </div>
 </template>
 <script>
     export default {
         data() {
-            return {
-
-            };
+            return {};
         },
         mounted() {
 
@@ -16,8 +14,11 @@
         beforeDestroy() {
 
         },
-        methods: {
-
-        }
+        methods: {}
     };
 </script>
+<style>
+    html, body, .fillPage {
+        width: 100%; height: 100%;
+    }
+</style>
