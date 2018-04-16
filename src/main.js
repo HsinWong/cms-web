@@ -14,6 +14,13 @@ Vue.use(Vuex);
 Vue.use(iView);
 
 
+const store = new Vuex.Store({
+    state: {},
+    getters: {},
+    mutations: {},
+    actions: {}
+});
+
 
 // 路由配置
 const RouterConfig = {
@@ -24,29 +31,25 @@ const router = new VueRouter(RouterConfig);
 
 router.beforeEach((to, from, next) => {
     iView.LoadingBar.start();
-    Util.title(to.meta.title);
-    next();
+
+    if (to.name === 'login') {
+        next();
+    }
+    else {
+        let tokenExpires = localStorage.getItem(Util.storageKey.tokenExpires);
+        if (tokenExpires && tokenExpires > (new Date().getTime() / 1000)) {
+            Util.title(to.meta.title);
+            next();
+        } else {
+            localStorage.clear();
+            next({replace: true, name: 'login'});
+        }
+    }
 });
 
 router.afterEach(() => {
     iView.LoadingBar.finish();
     window.scrollTo(0, 0);
-});
-
-
-const store = new Vuex.Store({
-    state: {
-
-    },
-    getters: {
-
-    },
-    mutations: {
-
-    },
-    actions: {
-
-    }
 });
 
 

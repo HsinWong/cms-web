@@ -9,12 +9,12 @@
             </p>
             <Form ref="form" :model="form" :rules="rule">
                 <FormItem prop="username">
-                    <Input type="text" v-model.trim="form.username" placeholder="用户名">
+                    <Input type="text" v-model.trim="form.username" placeholder="用户名" autofocus>
                     <Icon type="person" slot="prepend"></Icon>
                     </Input>
                 </FormItem>
                 <FormItem prop="password">
-                    <Input type="password" v-model="form.password" placeholder="密码">
+                    <Input type="password" v-model="form.password" @on-enter="handleSubmit('form')" placeholder="密码">
                     <Icon type="locked" slot="prepend"></Icon>
                     </Input>
                 </FormItem>
@@ -28,6 +28,9 @@
 </template>
 
 <script>
+    import Util from '../libs/util';
+    import jwtDecode from 'jwt-decode';
+
     export default {
         data() {
             return {
@@ -49,9 +52,25 @@
             handleSubmit(name) {
                 this.$refs[name].validate((valid) => {
                     if (valid) {
-                        this.$Message.success('操作成功！');
-                    } else {
-                        this.$Message.error('操作失败！');
+                        Util.ajax.post('/login', {
+                            username: this.form.username,
+                            password: this.form.password
+                        })
+                            .then((response) => {
+                                let token = response.data.token;
+                                localStorage.setItem(Util.storageKey.authorization, 'Bearer ' + token);
+                                Util.ajaxSetAuthorization();
+
+                                let tokenInfo = jwtDecode(token);
+                                localStorage.setItem(Util.storageKey.userId, tokenInfo.userId);
+                                localStorage.setItem(Util.storageKey.tokenExpires, tokenInfo.exp);
+
+                                this.$router.replace({name: 'index'});
+                                this.$Message.info('登录成功！');
+                            })
+                            .catch((error) => {
+                                this.$Message.info('登录失败！' + error.response.data.message);
+                            });
                     }
                 });
             }

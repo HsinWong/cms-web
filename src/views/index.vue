@@ -45,13 +45,12 @@
     </div>
 </template>
 <script>
+    import Util from '../libs/util';
+
     export default {
         methods: {
             handleStart() {
-                this.$Modal.info({
-                    title: 'Bravo',
-                    content: 'Now, enjoy the convenience of iView.'
-                });
+                Util.ajax.get('/users');
             }
         }
     };
