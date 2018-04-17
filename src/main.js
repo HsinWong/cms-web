@@ -4,6 +4,7 @@ import VueRouter from 'vue-router';
 import Routers from './router';
 import Vuex from 'vuex';
 import Util from './libs/util';
+import Cookies from 'js-cookie';
 import App from './app.vue';
 import 'iview/dist/styles/iview.css';
 
@@ -33,17 +34,17 @@ router.beforeEach((to, from, next) => {
     iView.LoadingBar.start();
 
     if (to.name === 'login') {
-        next();
-    }
-    else {
-        let tokenExpires = localStorage.getItem(Util.storageKey.tokenExpires);
-        if (tokenExpires && tokenExpires > (new Date().getTime() / 1000)) {
-            Util.title(to.meta.title);
-            next();
+        if (Cookies.get('token')) {
+            next({replace: true, name: 'index'});
         } else {
-            localStorage.clear();
-            next({replace: true, name: 'login'});
+            next();
         }
+    }
+    else if (!Cookies.get('token')) {
+        next({replace: true, name: 'login'});
+    } else {
+        Util.title(to.meta.title);
+        next();
     }
 });
 

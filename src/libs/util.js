@@ -1,5 +1,6 @@
 import axios from 'axios';
 import env from '../config/env';
+import Cookies from 'js-cookie';
 
 let util = {};
 util.title = function (title) {
@@ -26,9 +27,9 @@ util.ajax = axios.create({
 });
 
 util.ajaxSetAuthorization = function () {
-    let authorization = localStorage.getItem(util.storageKey.authorization);
-    if (authorization) {
-        util.ajax.defaults.headers.common['Authorization'] = authorization;
+    let token = Cookies.get('token');
+    if (token) {
+        util.ajax.defaults.headers.common['Authorization'] = 'Bearer ' + token;
     }
 };
 util.ajaxSetAuthorization();

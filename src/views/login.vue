@@ -30,6 +30,7 @@
 <script>
     import Util from '../libs/util';
     import jwtDecode from 'jwt-decode';
+    import Cookies from 'js-cookie';
 
     export default {
         data() {
@@ -58,12 +59,9 @@
                         })
                             .then((response) => {
                                 let token = response.data.token;
-                                localStorage.setItem(Util.storageKey.authorization, 'Bearer ' + token);
-                                Util.ajaxSetAuthorization();
-
                                 let tokenInfo = jwtDecode(token);
-                                localStorage.setItem(Util.storageKey.userId, tokenInfo.userId);
-                                localStorage.setItem(Util.storageKey.tokenExpires, tokenInfo.exp);
+                                Cookies.set('token', token, {expires: new Date(tokenInfo.exp * 1000)});
+                                Util.ajaxSetAuthorization();
 
                                 this.$router.replace({name: 'index'});
                                 this.$Message.info('登录成功！');

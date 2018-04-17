@@ -7,6 +7,10 @@ const routers = [
         meta: {
             title: 'CMS内容管理系统'
         },
+        beforeEnter: (to, from, next) => {
+            Util.title(to.meta.title);
+            next();
+        },
         component: (resolve) => require(['./views/index.vue'], resolve)
     }, {
         path: '/login',
