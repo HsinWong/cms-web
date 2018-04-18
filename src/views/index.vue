@@ -47,6 +47,35 @@
         display: none;
     }
 
+    .menu-item span {
+        display: inline-block;
+        overflow: hidden;
+        width: 69px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        vertical-align: bottom;
+        transition: width .2s ease .2s;
+    }
+
+    .menu-item i {
+        transform: translateX(0px);
+        transition: font-size .2s ease, transform .2s ease;
+        vertical-align: middle;
+        font-size: 16px;
+    }
+
+    .collapsed-menu /deep/ span, ivu-menu-submenu-title-icon {
+        width: 0px;
+        transition: width .2s ease;
+    }
+
+    .collapsed-menu i {
+        transform: translateX(5px);
+        transition: font-size .2s ease .2s, transform .2s ease .2s;
+        vertical-align: middle;
+        font-size: 22px;
+    }
+
     .content {
         margin-top: 64px;
         margin-left: 200px;
@@ -85,45 +114,22 @@
                 <img class="avatar" src="../images/avatar1.jpg" alt="avatar" width="32" height="32"/>
             </div>
         </Header>
-        <Sider class="sider" hide-trigger>
-            <Menu active-name="1-2" theme="dark" width="auto" :open-names="['1']">
-                <Submenu name="1">
+        <Sider v-model="isCollapsed" :collapsed-width="78" class="sider" collapsible>
+            <Menu ref="siderMenu" theme="dark" :open-names="openedMenus" width="auto" :class="menuitemClasses">
+                <Submenu v-for="menu in menus" :key="menu.name" :name="menu.name">
                     <template slot="title">
-                        <Icon type="ios-navigate"></Icon>
-                        Item 1
+                        <Icon :type="menu.icon"></Icon>
+                        <span>{{ menu.name }}</span>
                     </template>
-                    <MenuItem name="1-1">Option 1</MenuItem>
-                    <MenuItem name="1-2">Option 2</MenuItem>
-                    <MenuItem name="1-3">Option 3</MenuItem>
-                </Submenu>
-                <Submenu name="2">
-                    <template slot="title">
-                        <Icon type="ios-keypad"></Icon>
-                        Item 2
-                    </template>
-                    <MenuItem name="2-1">Option 1</MenuItem>
-                    <MenuItem name="2-2">Option 2</MenuItem>
-                </Submenu>
-                <Submenu name="3">
-                    <template slot="title">
-                        <Icon type="ios-analytics"></Icon>
-                        Item 3
-                    </template>
-                    <MenuItem name="3-1">Option 1</MenuItem>
-                    <MenuItem name="3-2">Option 2</MenuItem>
-                    <MenuItem name="3-1">Option 1</MenuItem>
-                    <MenuItem name="3-2">Option 2</MenuItem>
-                    <MenuItem name="3-1">Option 1</MenuItem>
-                    <MenuItem name="3-2">Option 2</MenuItem>
-                    <MenuItem name="3-1">Option 1</MenuItem>
-                    <MenuItem name="3-2">Option 2</MenuItem>
-                    <MenuItem name="3-1">Option 1</MenuItem>
-                    <MenuItem name="3-2">Option 2</MenuItem>
+                    <MenuItem v-for="subMenu in menu.subMenus" :key="subMenu.name" :name="subMenu.name">
+                        <Icon :type="subMenu.icon"></Icon>
+                        <span>{{ subMenu.name }}</span>
+                    </MenuItem>
                 </Submenu>
             </Menu>
         </Sider>
         <Content class="content">
-            <Tabs :value="activeTab" type="card" closable :animated="false" @on-click="handleTabClick" @on-tab-remove="handleTabRemove">
+            <Tabs v-model="activeTab" type="card" closable :animated="false" @on-tab-remove="handleTabRemove">
                 <TabPane v-for="tab in tabs" :key="tab.name" :label="tab.name" :icon="tab.icon"
                          v-if="tab.show"></TabPane>
                 <Dropdown slot="extra" :transfer="true" @on-click="handleTabs">
@@ -142,6 +148,7 @@
 </template>
 <script>
     import Util from '../libs/util';
+    import axios from 'axios';
     import Cookies from 'js-cookie';
     import fullScreen from './fullscreen.vue';
 
@@ -152,6 +159,9 @@
         data() {
             return {
                 isFullScreen: false,
+                isCollapsed: false,
+                openedMenus: [],
+                menus: [],
                 activeTab: 1,
                 tabs: [
                     {
@@ -175,7 +185,13 @@
         computed: {
             currentUser() {
                 return this.$store.state.currentUser;
-            }
+            },
+            menuitemClasses: function () {
+                return [
+                    'menu-item',
+                    this.isCollapsed ? 'collapsed-menu' : ''
+                ];
+            },
         },
         methods: {
             handleUser(action) {
@@ -184,9 +200,6 @@
                     localStorage.clear();
                     this.$router.replace({name: 'login'});
                 }
-            },
-            handleTabClick(name) {
-                this.activeTab = name;
             },
             handleTabRemove(name) {
                 this.tabs[name].show = false;
@@ -206,13 +219,22 @@
             },
         },
         beforeRouteEnter(to, from, next) {
-            Util.ajax.get('/users/' + Util.getTokenInfo().userId)
-                .then((response) => {
-                    next(vm => vm.$store.commit('updateCurrentUser', response.data));
-                })
-                .catch((error) => {
-                    next(vm => vm.$Message.info('获取用户信息失败！' + error.response.data.message));
-                });
+            axios.all([
+                Util.ajax.get('/users/' + Util.getTokenInfo().userId),
+                Util.ajax.get('/fullMenus/'),
+            ])
+                .then(axios.spread(function (usersResponse, menusResponse) {
+                    next(vm => {
+                        vm.$store.commit('updateCurrentUser', usersResponse.data);
+                        menusResponse.data.forEach(menu => {
+                            vm.menus.push(menu);
+                        });
+                        vm.openedMenus.push(vm.menus[0].name);
+                        vm.$nextTick(() => {
+                            vm.$refs.siderMenu.updateOpened();
+                        });
+                    });
+                }));
         },
     };
 </script>

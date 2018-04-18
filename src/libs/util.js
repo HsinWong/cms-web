@@ -25,6 +25,9 @@ util.ajax = axios.create({
     baseURL: ajaxUrl,
     timeout: 30000,
     headers: {'X-Requested-With': 'XMLHttpRequest'},
+    validateStatus: function (status) {
+        return status < 500; // 当服务器返回响应码小于500时，不抛出异常
+    },
 });
 
 util.ajaxSetAuthorization = function () {
