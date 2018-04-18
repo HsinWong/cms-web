@@ -1,24 +1,37 @@
 <style scoped>
-    .header {
-        position: fixed;
-        z-index: 1000;
-        width: 100%;
-        padding: 0 25px;
+    .sider-layout {
+        height: 100%;
     }
 
-    .header-logo {
-        float: left;
-        padding: 0 20px;
+    .sider-logo {
+        padding: 0;
+        text-align: center;
     }
 
-    .header-logo > a {
+    .sider-logo a {
         font-size: 18px;
         font-weight: bold;
         color: #fff;
     }
 
+    .sider-menu {
+        background: #495060;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    .sider-menu::-webkit-scrollbar {
+        display: none;
+    }
+
+    .header {
+        padding: 0 25px;
+    }
+
     .header-tool {
-        float: right;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
     }
 
     .header-tool /deep/ .ivu-btn-text {
@@ -30,21 +43,7 @@
     }
 
     .header-tool .avatar {
-        vertical-align: middle;
         border-radius: 50%;
-    }
-
-    .sider {
-        position: fixed;
-        z-index: 999;
-        height: 100%;
-        padding-top: 64px;
-        overflow-x: hidden;
-        overflow-y: scroll;
-    }
-
-    .sider::-webkit-scrollbar {
-        display: none;
     }
 
     .menu-item span {
@@ -77,8 +76,7 @@
     }
 
     .content {
-        margin-top: 64px;
-        margin-left: 200px;
+        overflow-y: auto;
         padding: 16px;
         background: #e3e8ee;
     }
@@ -93,57 +91,81 @@
         min-width: auto;
     }
 </style>
+<style>
+    .ivu-layout-sider {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ivu-layout-sider-children {
+        flex: 1 1 auto;
+    }
+</style>
 <template>
     <Layout class="fillPage">
-        <Header class="header">
-            <div class="header-logo">
-                <router-link :to="{ name: 'index' }">内容管理系统</router-link>
-            </div>
-            <div class="header-tool">
-                <full-screen v-model="isFullScreen"></full-screen>
-                <Dropdown @on-click="handleUser">
-                    <Button type="text">
-                        {{ currentUser.nickname }}
-                        <Icon type="arrow-down-b"></Icon>
-                    </Button>
-                    <DropdownMenu slot="list">
-                        <DropdownItem>个人信息</DropdownItem>
-                        <DropdownItem name="logout" divided>退出登录</DropdownItem>
-                    </DropdownMenu>
-                </Dropdown>
-                <img class="avatar" src="../images/avatar1.jpg" alt="avatar" width="32" height="32"/>
-            </div>
-        </Header>
-        <Sider v-model="isCollapsed" :collapsed-width="78" class="sider" collapsible>
-            <Menu ref="siderMenu" theme="dark" :open-names="openedMenus" width="auto" :class="menuitemClasses">
-                <Submenu v-for="menu in menus" :key="menu.name" :name="menu.name">
-                    <template slot="title">
-                        <Icon :type="menu.icon"></Icon>
-                        <span>{{ menu.name }}</span>
-                    </template>
-                    <MenuItem v-for="subMenu in menu.subMenus" :key="subMenu.name" :name="subMenu.name">
-                        <Icon :type="subMenu.icon"></Icon>
-                        <span>{{ subMenu.name }}</span>
-                    </MenuItem>
-                </Submenu>
-            </Menu>
+        <Sider v-model="isCollapsed" :collapsed-width="78" collapsible>
+            <Layout class="sider-layout">
+                <Header class="sider-logo">
+                    <router-link :to="{ name: 'index' }">内容管理系统</router-link>
+                </Header>
+                <Content class="sider-menu">
+                    <Menu ref="siderMenu" theme="dark" :open-names="openedMenus" width="auto" :class="menuitemClasses">
+                        <Submenu v-for="menu in menus" :key="menu.name" :name="menu.name">
+                            <template slot="title">
+                                <Icon :type="menu.icon"></Icon>
+                                <span>{{ menu.name }}</span>
+                            </template>
+                            <MenuItem v-for="subMenu in menu.subMenus" :key="subMenu.name" :name="subMenu.name">
+                                <Icon :type="subMenu.icon"></Icon>
+                                <span>{{ subMenu.name }}</span>
+                            </MenuItem>
+                        </Submenu>
+                    </Menu>
+                </Content>
+            </Layout>
         </Sider>
-        <Content class="content">
-            <Tabs v-model="activeTab" type="card" closable :animated="false" @on-tab-remove="handleTabRemove">
-                <TabPane v-for="tab in tabs" :key="tab.name" :label="tab.name" :icon="tab.icon"
-                         v-if="tab.show"></TabPane>
-                <Dropdown slot="extra" :transfer="true" @on-click="handleTabs">
-                    <Button type="text">
-                        标签操作
-                        <Icon type="arrow-down-b"></Icon>
-                    </Button>
-                    <DropdownMenu slot="list">
-                        <DropdownItem name="all">关闭所有</DropdownItem>
-                        <DropdownItem name="others">关闭其它</DropdownItem>
-                    </DropdownMenu>
-                </Dropdown>
-            </Tabs>
-        </Content>
+        <Layout>
+            <Header class="header">
+                <div class="header-tool">
+                    <full-screen v-model="isFullScreen"></full-screen>
+                    <Dropdown @on-click="handleUser">
+                        <Button type="text">
+                            {{ currentUser.nickname }}
+                            <Icon type="arrow-down-b"></Icon>
+                        </Button>
+                        <DropdownMenu slot="list">
+                            <DropdownItem>个人信息</DropdownItem>
+                            <DropdownItem name="logout" divided>退出登录</DropdownItem>
+                        </DropdownMenu>
+                    </Dropdown>
+                    <img class="avatar" src="../images/avatar1.jpg" alt="avatar" width="32" height="32"/>
+                </div>
+            </Header>
+            <Content class="content">
+                <Tabs v-model="activeTab" type="card" closable :animated="false" @on-tab-remove="handleTabRemove">
+                    <TabPane v-for="tab in tabs" :key="tab.name" :label="tab.name" :icon="tab.icon"
+                             v-if="tab.show">
+                        a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z
+                        a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z
+                        a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z
+                        a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z
+                        a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z
+                        a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z
+                        a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z a b c d e f g h i j k l m n o p q r s t u v w x y z
+                    </TabPane>
+                    <Dropdown slot="extra" :transfer="true" @on-click="handleTabs">
+                        <Button type="text">
+                            标签操作
+                            <Icon type="arrow-down-b"></Icon>
+                        </Button>
+                        <DropdownMenu slot="list">
+                            <DropdownItem name="all">关闭所有</DropdownItem>
+                            <DropdownItem name="others">关闭其它</DropdownItem>
+                        </DropdownMenu>
+                    </Dropdown>
+                </Tabs>
+            </Content>
+        </Layout>
     </Layout>
 </template>
 <script>
@@ -161,7 +183,80 @@
                 isFullScreen: false,
                 isCollapsed: false,
                 openedMenus: [],
-                menus: [],
+                menus: [
+                    {
+                        name: '测试1',
+                        icon: '',
+                        subMenus: [
+                            {
+                                name: '测试1',
+                                icon: '',
+                            },
+                            {
+                                name: '测试1',
+                                icon: '',
+                            },
+                            {
+                                name: '测试1',
+                                icon: '',
+                            },
+                        ],
+                    },
+                    {
+                        name: '测试1',
+                        icon: '',
+                        subMenus: [
+                            {
+                                name: '测试1',
+                                icon: '',
+                            },
+                            {
+                                name: '测试1',
+                                icon: '',
+                            },
+                            {
+                                name: '测试1',
+                                icon: '',
+                            },
+                        ],
+                    },
+                    {
+                        name: '测试1',
+                        icon: '',
+                        subMenus: [
+                            {
+                                name: '测试1',
+                                icon: '',
+                            },
+                            {
+                                name: '测试1',
+                                icon: '',
+                            },
+                            {
+                                name: '测试1',
+                                icon: '',
+                            },
+                        ],
+                    },
+                    {
+                        name: '测试1',
+                        icon: '',
+                        subMenus: [
+                            {
+                                name: '测试1',
+                                icon: '',
+                            },
+                            {
+                                name: '测试1',
+                                icon: '',
+                            },
+                            {
+                                name: '测试1',
+                                icon: '',
+                            },
+                        ],
+                    },
+                ],
                 activeTab: 1,
                 tabs: [
                     {
