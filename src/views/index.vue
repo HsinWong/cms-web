@@ -1,57 +1,218 @@
 <style scoped>
-    .index {
+    .header {
+        position: fixed;
+        z-index: 1000;
         width: 100%;
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        text-align: center;
+        padding: 0 25px;
     }
 
-    .index h1 {
-        height: 150px;
+    .header-logo {
+        float: left;
+        padding: 0 20px;
     }
 
-    .index h1 img {
+    .header-logo > a {
+        font-size: 18px;
+        font-weight: bold;
+        color: #fff;
+    }
+
+    .header-tool {
+        float: right;
+    }
+
+    .header-tool /deep/ .ivu-btn-text {
+        color: hsla(0, 0%, 100%, .7);
+    }
+
+    .header-tool /deep/ .ivu-btn-text:hover {
+        color: #fff;
+    }
+
+    .header-tool .avatar {
+        vertical-align: middle;
+        border-radius: 50%;
+    }
+
+    .sider {
+        position: fixed;
+        z-index: 999;
         height: 100%;
+        padding-top: 64px;
+        overflow-x: hidden;
+        overflow-y: scroll;
     }
 
-    .index h2 {
-        color: #666;
-        margin-bottom: 200px;
+    .sider::-webkit-scrollbar {
+        display: none;
     }
 
-    .index h2 p {
-        margin: 0 0 50px;
+    .content {
+        margin-top: 64px;
+        margin-left: 200px;
+        padding: 16px;
+        background: #e3e8ee;
     }
 
-    .index .ivu-row-flex {
-        height: 100%;
+    .content > .ivu-tabs-card > .ivu-tabs-content > .ivu-tabs-tabpane {
+        margin-top: -16px;
+        background: #fff;
+        padding: 16px;
+    }
+
+    .ivu-dropdown-menu {
+        min-width: auto;
     }
 </style>
 <template>
-    <div class="index">
-        <Row type="flex" justify="center" align="middle">
-            <Col span="24">
-                <h1>
-                    <img src="https://raw.githubusercontent.com/iview/iview/master/assets/logo.png">
-                </h1>
-                <h2>
-                    <p>Welcome to your iView app!</p>
-                    <Button type="ghost" @click="handleStart">Start iView</Button>
-                </h2>
-            </Col>
-        </Row>
-    </div>
+    <Layout class="fillPage">
+        <Header class="header">
+            <div class="header-logo">
+                <router-link :to="{ name: 'index' }">内容管理系统</router-link>
+            </div>
+            <div class="header-tool">
+                <full-screen v-model="isFullScreen"></full-screen>
+                <Dropdown @on-click="handleUser">
+                    <Button type="text">
+                        {{ currentUser.nickname }}
+                        <Icon type="arrow-down-b"></Icon>
+                    </Button>
+                    <DropdownMenu slot="list">
+                        <DropdownItem>个人信息</DropdownItem>
+                        <DropdownItem name="logout" divided>退出登录</DropdownItem>
+                    </DropdownMenu>
+                </Dropdown>
+                <img class="avatar" src="../images/avatar1.jpg" alt="avatar" width="32" height="32"/>
+            </div>
+        </Header>
+        <Sider class="sider" hide-trigger>
+            <Menu active-name="1-2" theme="dark" width="auto" :open-names="['1']">
+                <Submenu name="1">
+                    <template slot="title">
+                        <Icon type="ios-navigate"></Icon>
+                        Item 1
+                    </template>
+                    <MenuItem name="1-1">Option 1</MenuItem>
+                    <MenuItem name="1-2">Option 2</MenuItem>
+                    <MenuItem name="1-3">Option 3</MenuItem>
+                </Submenu>
+                <Submenu name="2">
+                    <template slot="title">
+                        <Icon type="ios-keypad"></Icon>
+                        Item 2
+                    </template>
+                    <MenuItem name="2-1">Option 1</MenuItem>
+                    <MenuItem name="2-2">Option 2</MenuItem>
+                </Submenu>
+                <Submenu name="3">
+                    <template slot="title">
+                        <Icon type="ios-analytics"></Icon>
+                        Item 3
+                    </template>
+                    <MenuItem name="3-1">Option 1</MenuItem>
+                    <MenuItem name="3-2">Option 2</MenuItem>
+                    <MenuItem name="3-1">Option 1</MenuItem>
+                    <MenuItem name="3-2">Option 2</MenuItem>
+                    <MenuItem name="3-1">Option 1</MenuItem>
+                    <MenuItem name="3-2">Option 2</MenuItem>
+                    <MenuItem name="3-1">Option 1</MenuItem>
+                    <MenuItem name="3-2">Option 2</MenuItem>
+                    <MenuItem name="3-1">Option 1</MenuItem>
+                    <MenuItem name="3-2">Option 2</MenuItem>
+                </Submenu>
+            </Menu>
+        </Sider>
+        <Content class="content">
+            <Tabs :value="activeTab" type="card" closable :animated="false" @on-click="handleTabClick" @on-tab-remove="handleTabRemove">
+                <TabPane v-for="tab in tabs" :key="tab.name" :label="tab.name" :icon="tab.icon"
+                         v-if="tab.show"></TabPane>
+                <Dropdown slot="extra" :transfer="true" @on-click="handleTabs">
+                    <Button type="text">
+                        标签操作
+                        <Icon type="arrow-down-b"></Icon>
+                    </Button>
+                    <DropdownMenu slot="list">
+                        <DropdownItem name="all">关闭所有</DropdownItem>
+                        <DropdownItem name="others">关闭其它</DropdownItem>
+                    </DropdownMenu>
+                </Dropdown>
+            </Tabs>
+        </Content>
+    </Layout>
 </template>
 <script>
     import Util from '../libs/util';
+    import Cookies from 'js-cookie';
+    import fullScreen from './fullscreen.vue';
 
     export default {
-        methods: {
-            handleStart() {
-                Util.ajax.get('/users');
+        components: {
+            fullScreen,
+        },
+        data() {
+            return {
+                isFullScreen: false,
+                activeTab: 1,
+                tabs: [
+                    {
+                        name: '测试1',
+                        icon: '',
+                        show: true,
+                    },
+                    {
+                        name: '测试2',
+                        icon: '',
+                        show: true,
+                    },
+                    {
+                        name: '测试3',
+                        icon: '',
+                        show: true,
+                    },
+                ],
+            };
+        },
+        computed: {
+            currentUser() {
+                return this.$store.state.currentUser;
             }
-        }
+        },
+        methods: {
+            handleUser(action) {
+                if (action === 'logout') {
+                    Cookies.remove('token');
+                    localStorage.clear();
+                    this.$router.replace({name: 'login'});
+                }
+            },
+            handleTabClick(name) {
+                this.activeTab = name;
+            },
+            handleTabRemove(name) {
+                this.tabs[name].show = false;
+            },
+            handleTabs(action) {
+                if (action === 'all') {
+                    this.tabs.forEach(tab => {
+                        tab.show = false;
+                    });
+                } else if (action === 'others') {
+                    this.tabs.forEach((tab, index) => {
+                        if (this.activeTab !== index) {
+                            tab.show = false;
+                        }
+                    });
+                }
+            },
+        },
+        beforeRouteEnter(to, from, next) {
+            Util.ajax.get('/users/' + Util.getTokenInfo().userId)
+                .then((response) => {
+                    next(vm => vm.$store.commit('updateCurrentUser', response.data));
+                })
+                .catch((error) => {
+                    next(vm => vm.$Message.info('获取用户信息失败！' + error.response.data.message));
+                });
+        },
     };
 </script>

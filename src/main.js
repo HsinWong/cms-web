@@ -16,9 +16,21 @@ Vue.use(iView);
 
 
 const store = new Vuex.Store({
-    state: {},
+    state: {
+        currentUser: {
+            id: '',
+            username: '',
+            nickname: '',
+        }
+    },
     getters: {},
-    mutations: {},
+    mutations: {
+        updateCurrentUser(state, user) {
+            Vue.set(state.currentUser, 'id', user.id);
+            Vue.set(state.currentUser, 'username', user.username);
+            Vue.set(state.currentUser, 'nickname', user.nickname);
+        }
+    },
     actions: {}
 });
 

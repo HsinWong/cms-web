@@ -1,6 +1,7 @@
 import axios from 'axios';
 import env from '../config/env';
 import Cookies from 'js-cookie';
+import jwtDecode from 'jwt-decode';
 
 let util = {};
 util.title = function (title) {
@@ -33,5 +34,12 @@ util.ajaxSetAuthorization = function () {
     }
 };
 util.ajaxSetAuthorization();
+
+util.getTokenInfo = function () {
+    let token = Cookies.get('token');
+    if (token) {
+        return jwtDecode(token);
+    }
+}
 
 export default util;
