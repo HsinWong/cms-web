@@ -5,7 +5,7 @@ import jwtDecode from 'jwt-decode';
 
 let util = {};
 util.title = function (title) {
-    title = title ? title : '未命名';
+    title = 'CMS内容管理系统' + (title ? ' - ' + title : '');
     window.document.title = title;
 };
 
@@ -43,6 +43,6 @@ util.getTokenInfo = function () {
     if (token) {
         return jwtDecode(token);
     }
-}
+};
 
 export default util;
