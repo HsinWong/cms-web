@@ -1,7 +1,7 @@
 <template>
     <Form ref="formValidate" :model="formValidate" :rules="ruleValidate" :label-width="80">
         <FormItem label="用户名" prop="username">
-            <Input v-model="formValidate.username" readonly></Input>
+            <Input :value="formValidate.username" readonly></Input>
         </FormItem>
         <FormItem label="昵称" prop="nickname">
             <Input v-model="formValidate.nickname"></Input>
@@ -26,7 +26,7 @@
 </template>
 
 <script>
-    import Util from '../libs/util';
+    import Util from '../../libs/util';
 
     export default {
         name: 'profile',

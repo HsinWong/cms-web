@@ -161,6 +161,7 @@
                         </Button>
                         <DropdownMenu slot="list">
                             <DropdownItem name="profile">个人信息</DropdownItem>
+                            <DropdownItem name="password">修改密码</DropdownItem>
                             <DropdownItem name="logout" divided>退出登录</DropdownItem>
                         </DropdownMenu>
                     </Dropdown>
@@ -169,7 +170,7 @@
             </Header>
             <Content class="content">
                 <Tabs v-model="activeTab" type="card" closable :animated="false" @on-tab-remove="handleTabRemove">
-                    <TabPane v-for="tab in tabs" :key="tab.name" :label="tab.name" :icon="tab.icon"
+                    <TabPane v-for="tab in tabs" :key="tab.name" :name="tab.view" :label="tab.name" :icon="tab.icon"
                              v-if="tab.show">
                         <router-view :name="tab.view"></router-view>
                     </TabPane>
@@ -192,7 +193,7 @@
     import Util from '../libs/util';
     import axios from 'axios';
     import Cookies from 'js-cookie';
-    import fullScreen from './fullscreen.vue';
+    import fullScreen from './components/fullscreen.vue';
 
     export default {
         components: {
@@ -224,8 +225,8 @@
         },
         watch: {
             activeTab: function (n, o) {
-                if (n >= 0) {
-                    this.$router.push({name: this.tabs[n].view});
+                if (n !== -1) {
+                    this.$router.push({name: n});
                 } else {
                     this.$router.push({name: 'index'});
                 }
@@ -241,8 +242,8 @@
                     this.tabs.forEach((tab, index) => {
                         if (tab.view === this.$route.name) {
                             opened = true;
-                            this.tabs[index].show = true;
-                            this.activeTab = index;
+                            tab.show = true;
+                            this.activeTab = tab.view;
                         }
                     });
                     if (!opened) {
@@ -253,7 +254,7 @@
                             show: true,
                         };
                         this.tabs.push(tab);
-                        this.activeTab = this.tabs.lastIndexOf(tab);
+                        this.activeTab = tab.view;
                     }
                 } else {
                     this.activeTab = -1;
@@ -265,28 +266,17 @@
                     localStorage.clear();
                     this.$router.replace({name: 'login'});
                 } else if (action === 'profile') {
-                    let opened = false;
-                    this.tabs.forEach((tab, index) => {
-                        if (tab.view === 'profile') {
-                            opened = true;
-                            this.tabs[index].show = true;
-                            this.activeTab = index;
-                        }
-                    });
-                    if (!opened) {
-                        let profile = {
-                            name: '测试1',
-                            icon: '',
-                            view: 'profile',
-                            show: true,
-                        };
-                        this.tabs.push(profile);
-                        this.activeTab = this.tabs.lastIndexOf(profile);
-                    }
+                    this.$router.push({name: 'profile'});
+                } else if (action === 'password') {
+                    this.$router.push({name: 'password'});
                 }
             },
             handleTabRemove(name) {
-                this.tabs[name].show = false;
+                this.tabs.forEach(tab => {
+                    if (tab.view === name) {
+                        tab.show = false;
+                    }
+                });
             },
             handleTabs(action) {
                 if (action === 'all') {

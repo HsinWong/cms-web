@@ -13,7 +13,7 @@
         },
         mounted() {
             Util.ajax.interceptors.response.use(response => {
-                if (response.status === 403) {
+                if (response.status === 401) {
                     Cookies.remove('token');
                     localStorage.clear();
                     this.$router.replace({name: 'login'});

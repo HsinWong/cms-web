@@ -18,7 +18,18 @@ const routers = [
                     icon: 'person',
                 },
                 components: {
-                    profile: (resolve) => require(['./views/profile.vue'], resolve),
+                    profile: (resolve) => require(['./views/system/profile.vue'], resolve),
+                },
+            },
+            {
+                path: '/password',
+                name: 'password',
+                meta: {
+                    title: '修改密码',
+                    icon: 'key',
+                },
+                components: {
+                    password: (resolve) => require(['./views/system/password.vue'], resolve),
                 },
             },
         ],
