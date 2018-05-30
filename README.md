@@ -22,3 +22,9 @@
 ## 测试
 
 确保正常启动 [cms](https://github.com/HsinWong/cms) 后，在浏览器访问 `http://localhost:8080/`：
+
+![登录页面](https://raw.githubusercontent.com/HsinWong/cms-web/master/screenshots/login.jpg)
+
+输入用户名和密码 `admin:admin` 后，单击【登录】按钮，跳转到主页：
+
+![主页](https://raw.githubusercontent.com/HsinWong/cms-web/master/screenshots/index.jpg)
