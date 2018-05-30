@@ -32,6 +32,17 @@ const routers = [
                     password: (resolve) => require(['./views/system/password.vue'], resolve),
                 },
             },
+            {
+                path: '/users',
+                name: 'users',
+                meta: {
+                    title: '用户管理',
+                    icon: 'person-stalker',
+                },
+                components: {
+                    users: (resolve) => require(['./views/system/users.vue'], resolve),
+                },
+            },
         ],
     }, {
         path: '/login',

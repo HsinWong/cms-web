@@ -129,8 +129,9 @@
                     <router-link :to="{ name: 'index' }">{{title}}</router-link>
                 </Header>
                 <Content class="sider-menu">
-                    <Menu ref="siderMenu" theme="dark" :open-names="openedMenus" width="auto" :class="menuitemClasses">
-                        <Submenu v-for="menu in menus" :key="menu.name" :name="menu.name">
+                    <Menu ref="siderMenu" theme="dark" :active-name="activeMenu" :open-names="openedMenus" width="auto"
+                          :class="menuitemClasses" @on-select="handleMenuSelect" @on-open-change="handleMenuOpen">
+                        <Submenu v-for="menu in menus" :key="menu.id" :name="menu.id">
                             <template slot="title">
                                 <Tooltip :content="menu.name" placement="right" :disabled="!isCollapsed"
                                          :transfer="true">
@@ -138,7 +139,7 @@
                                 </Tooltip>
                                 <span>{{ menu.name }}</span>
                             </template>
-                            <MenuItem v-for="subMenu in menu.subMenus" :key="subMenu.name" :name="subMenu.name">
+                            <MenuItem v-for="subMenu in menu.subMenus" :key="subMenu.id" :name="subMenu.id">
                                 <Tooltip :content="subMenu.name" placement="right" :disabled="!isCollapsed"
                                          :transfer="true">
                                     <Icon :type="subMenu.icon"></Icon>
@@ -203,6 +204,7 @@
             return {
                 isFullScreen: false,
                 isCollapsed: false,
+                activeMenu: '',
                 openedMenus: [],
                 menus: [],
                 activeTab: -1,
@@ -226,8 +228,29 @@
         watch: {
             activeTab: function (n, o) {
                 if (n !== -1) {
+                    let menu = this.indexMenu(menu => menu.href === n);
+                    if (menu) {
+                        this.activeMenu = menu.id;
+                        if (menu.parentId) {
+                            if (!this.openedMenus.some(openedId => openedId === menu.parentId)) {
+                                this.openedMenus.push(menu.parentId);
+                            }
+                            this.$nextTick(() => {
+                                this.$refs.siderMenu.updateOpened();
+                            });
+                        }
+                    } else {
+                        this.activeMenu = '';
+                    }
+                    this.$nextTick(() => {
+                        this.$refs.siderMenu.updateActiveName();
+                    });
                     this.$router.push({name: n});
                 } else {
+                    this.activeMenu = '';
+                    this.$nextTick(() => {
+                        this.$refs.siderMenu.updateActiveName();
+                    });
                     this.$router.push({name: 'index'});
                 }
             },
@@ -271,6 +294,33 @@
                     this.$router.push({name: 'password'});
                 }
             },
+            indexMenu(test) {
+                let indexMenu;
+                this.menus.forEach(menu => {
+                    if (menu.subMenus) {
+                        menu.subMenus.forEach(subMenu => {
+                            if (test(subMenu)) {
+                                indexMenu = subMenu;
+                            }
+                        });
+                    } else {
+                        if (test(menu)) {
+                            indexMenu = menu;
+                        }
+                    }
+                });
+                return indexMenu;
+            },
+            handleMenuSelect(name) {
+                this.activeMenu = name;
+                let menu = this.indexMenu(menu => menu.id === name);
+                if (menu) {
+                    this.$router.push({name: menu.href});
+                }
+            },
+            handleMenuOpen(name) {
+                this.openedMenus = name;
+            },
             handleTabRemove(name) {
                 this.tabs.forEach(tab => {
                     if (tab.view === name) {
@@ -304,7 +354,7 @@
                         menusResponse.data.forEach(menu => {
                             vm.menus.push(menu);
                         });
-                        vm.openedMenus.push(vm.menus[0].name);
+                        vm.openedMenus.push(vm.menus[0].id);
                         vm.$nextTick(() => {
                             vm.$refs.siderMenu.updateOpened();
                             vm.init();
